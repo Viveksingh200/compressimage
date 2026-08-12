@@ -14,7 +14,7 @@ const {
   title = "Compress Images to Any Size Online - Free JPG, PNG, WebP & ZIP Compressor",
   description = "Compress JPG, PNG, WebP and ZIP files directly in your browser. Choose your target size in 100KB, 200KB, 500KB or 1MB. 100% private with no server uploads.",
   keywords = "compress image size, image compressor, compress image online, reduce image size, compress jpg, compress png, compress image to 100kb, compress image to 200kb, compress zip images",
-  canonicalUrl = "https://compressimagesize.com"
+  canonicalUrl = "https://onlinecompressimage.com"
 } = Astro.props;
 
 const jsonLd = {
@@ -59,6 +59,16 @@ const jsonLd = {
   <meta property="twitter:url" content={canonicalUrl} />
   <meta property="twitter:title" content={title} />
   <meta property="twitter:description" content={description} />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NPV9HMQ23S"></script>
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NPV9HMQ23S');
+  </script>
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

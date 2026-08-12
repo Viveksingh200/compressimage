@@ -16,7 +16,7 @@ const pages = [
   "faq"
 ];
 
-const siteUrl = "https://compressimagesize.com";
+const siteUrl = "https://onlinecompressimage.com";
 
 export async function GET() {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

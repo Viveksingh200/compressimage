@@ -1,0 +1,77 @@
+---
+const features = [
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+    title: "Single Image Compression",
+    description: "Compress individual JPG, PNG, WebP, or AVIF photos with real-time before and after quality previews."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>`,
+    title: "Multiple & Bulk Compression",
+    description: "Drag and drop hundreds of photos at once. Process batch files simultaneously with zero queue delay."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>`,
+    title: "ZIP File Extraction & Compression",
+    description: "Upload `.zip` archives containing images. Our engine extracts every photo, compresses them, and re-zips them."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
+    title: "Compress to Exact Target Size",
+    description: "Specify exact file sizes like 100 KB, 200 KB, or 500 KB to fulfill strict passport or government portal rules."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-2V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>`,
+    title: "Resolution & Dimension Scaling",
+    description: "Resize high-resolution camera photos by percentage or custom dimensions while preserving aspect ratios."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>`,
+    title: "Convert Image Formats",
+    description: "Instantly convert PNG images to WebP or JPG to save up to 80% more disk space without visual quality loss."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>`,
+    title: "Batch Download as ZIP",
+    description: "Download all optimized images in a single organized `.zip` file with one click."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`,
+    title: "In-Browser Client Execution",
+    description: "Powered by modern WebAssembly and Canvas APIs. No slow network uploads, server queues, or rate limits."
+  },
+  {
+    icon: `<svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
+    title: "Private & Secure",
+    description: "Your files never leave your device. All calculations happen locally inside your web browser."
+  }
+];
+---
+
+<section class="py-16 sm:py-24 border-b border-surface-200 bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    
+    <!-- Section Header -->
+    <div class="max-w-2xl mx-auto text-center mb-12 sm:mb-16">
+      <span class="text-xs font-semibold text-brand-600 tracking-wider uppercase">Powerful Features</span>
+      <h2 class="text-2xl sm:text-4xl font-bold text-surface-900 tracking-tight mt-1.5">
+        Designed for speed, precision & absolute privacy
+      </h2>
+      <p class="text-sm sm:text-base text-surface-500 mt-3">
+        Everything you need to compress photos, batch images, or entire ZIP archives without sacrificing quality.
+      </p>
+    </div>
+
+    <!-- Feature Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {features.map((f) => (
+        <div class="bg-white border border-surface-200 rounded-xl p-6 hover:border-surface-300 transition-all shadow-subtle group">
+          <div class="w-10 h-10 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform" fragment set:html={f.icon} />
+          <h3 class="text-base font-semibold text-surface-900 mb-2">{f.title}</h3>
+          <p class="text-xs sm:text-sm text-surface-500 leading-relaxed">{f.description}</p>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>

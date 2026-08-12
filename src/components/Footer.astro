@@ -1,0 +1,98 @@
+---
+const sizeLinks = [
+  { href: "/compress-to-50kb", label: "Compress to 50KB" },
+  { href: "/compress-to-100kb", label: "Compress to 100KB" },
+  { href: "/compress-to-200kb", label: "Compress to 200KB" },
+  { href: "/compress-to-500kb", label: "Compress to 500KB" },
+  { href: "/compress-to-1mb", label: "Compress to 1MB" },
+];
+
+const formatLinks = [
+  { href: "/compress-jpg", label: "Compress JPG / JPEG" },
+  { href: "/compress-png", label: "Compress PNG" },
+  { href: "/compress-webp", label: "Compress WebP" },
+  { href: "/compress-avif", label: "Compress AVIF" },
+  { href: "/image-format-converter", label: "Format Converter" },
+];
+
+const featureLinks = [
+  { href: "/zip-image-compressor", label: "ZIP File Compressor" },
+  { href: "/bulk-image-compressor", label: "Bulk Image Compressor" },
+  { href: "/image-resizer", label: "Image Resizer" },
+  { href: "/faq", label: "Frequently Asked Questions" },
+];
+---
+
+<footer class="bg-surface-900 text-white pt-16 pb-12 border-t border-surface-800">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    
+    <!-- Top Footer Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-surface-800">
+      
+      <!-- Column 1: Brand Info -->
+      <div class="md:col-span-1 flex flex-col gap-4">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span class="font-bold text-lg text-white tracking-tight">compressimagesize<span class="text-brand-500">.com</span></span>
+        </a>
+        <p class="text-xs text-surface-400 leading-relaxed">
+          Fast, private, in-browser image compression tool. Reduce JPG, PNG, WEBP, and ZIP files to your exact target size without uploading files to any external server.
+        </p>
+      </div>
+
+      <!-- Column 2: Target Size Presets -->
+      <div>
+        <h4 class="font-semibold text-sm text-white mb-3 tracking-wide">Target File Sizes</h4>
+        <ul class="space-y-2 text-xs text-surface-400">
+          {sizeLinks.map((link) => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors">{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Column 3: Format Compressors -->
+      <div>
+        <h4 class="font-semibold text-sm text-white mb-3 tracking-wide">Format Optimization</h4>
+        <ul class="space-y-2 text-xs text-surface-400">
+          {formatLinks.map((link) => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors">{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Column 4: Features & Tools -->
+      <div>
+        <h4 class="font-semibold text-sm text-white mb-3 tracking-wide">Specialized Tools</h4>
+        <ul class="space-y-2 text-xs text-surface-400">
+          {featureLinks.map((link) => (
+            <li>
+              <a href={link.href} class="hover:text-white transition-colors">{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-surface-500">
+      <p>© Vivek Singh {new Date().getFullYear()} compressimagesize.com. All rights reserved.</p>
+      <div class="flex items-center gap-6">
+        <span>Privacy First</span>
+        <span>•</span>
+        <span>Zero Storage</span>
+        <span>•</span>
+        <span>Browser Canvas API</span>
+      </div>
+    </div>
+
+  </div>
+</footer>

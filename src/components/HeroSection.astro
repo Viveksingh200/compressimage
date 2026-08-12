@@ -1,0 +1,70 @@
+---
+import CompressionApp from './CompressionApp.jsx';
+
+interface Props {
+  headline?: string;
+  subheading?: string;
+  presetKb?: string;
+  format?: string;
+}
+
+const {
+  headline = "Compress Images to Any Size Online",
+  subheading = "Compress JPG, PNG, WebP and ZIP files directly in your browser. Choose your target size in KB or MB. No uploads. No registration. Private and lightning fast.",
+  presetKb = "100kb",
+  format = "original"
+} = Astro.props;
+---
+
+<section id="compress-tool" class="relative pt-10 pb-16 md:pt-14 md:pb-24 border-b border-surface-200 bg-grid-pattern">
+  
+  <!-- Subtle linear radial blur overlay -->
+  <div class="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white pointer-events-none"></div>
+
+  <div class="relative max-w-6xl mx-auto px-4 sm:px-6">
+    
+    <!-- Hero Header Text -->
+    <div class="max-w-3xl mx-auto text-center flex flex-col items-center gap-4 mb-8 sm:mb-12">
+
+      <h1 class="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-surface-900 leading-[1.1]">
+        {headline}
+      </h1>
+
+      <p class="text-base sm:text-lg text-surface-500 font-normal leading-relaxed max-w-2xl">
+        {subheading}
+      </p>
+
+      {/* Quick CTAs */}
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <a 
+          href="#upload-area" 
+          onClick="document.getElementById('file-upload-input')?.click()"
+          class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-subtle flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Compress Images
+        </a>
+        <a 
+          href="#upload-area"
+          onClick="document.getElementById('file-upload-input')?.click()"
+          class="px-5 py-2.5 bg-white hover:bg-surface-50 text-surface-800 font-semibold text-xs sm:text-sm rounded-lg border border-surface-200 transition-all shadow-subtle flex items-center gap-2"
+        >
+          <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+          Upload ZIP
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Main Compression Application Dropzone -->
+    <div id="upload-area" class="w-full">
+      <CompressionApp client:load initialPreset={presetKb} initialFormat={format} />
+    </div>
+
+  </div>
+
+</section>

@@ -1,0 +1,73 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  canonicalUrl?: string;
+}
+
+const {
+  title = "Compress Images to Any Size Online - Free JPG, PNG, WebP & ZIP Compressor",
+  description = "Compress JPG, PNG, WebP and ZIP files directly in your browser. Choose your target size in 100KB, 200KB, 500KB or 1MB. 100% private with no server uploads.",
+  keywords = "compress image size, image compressor, compress image online, reduce image size, compress jpg, compress png, compress image to 100kb, compress image to 200kb, compress zip images",
+  canonicalUrl = "https://compressimagesize.com"
+} = Astro.props;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Compress Image Size",
+  "url": canonicalUrl,
+  "description": description,
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "All",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+};
+---
+
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="generator" content={Astro.generator} />
+
+  <!-- Primary Meta Tags -->
+  <title>{title}</title>
+  <meta name="title" content={title} />
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords} />
+  <link rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content={canonicalUrl} />
+  <meta property="twitter:title" content={title} />
+  <meta property="twitter:description" content={description} />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</head>
+<body class="bg-white text-surface-900 font-sans antialiased min-h-full flex flex-col selection:bg-brand-100 selection:text-brand-800">
+  <Navbar />
+  <main class="flex-1">
+    <slot />
+  </main>
+  <Footer />
+</body>
+</html>

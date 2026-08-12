@@ -1,0 +1,87 @@
+---
+const faqs = [
+  {
+    q: "How to compress image size online?",
+    a: "To compress image size online, drag and drop your photo into compressimagesize.com. Select your desired preset (e.g. 50 KB, 100 KB, 200 KB, or Custom Quality) and click 'Compress Images'. Download your compressed photo instantly with zero server uploads."
+  },
+  {
+    q: "How to compress image size in mobile (iPhone, iPad & Android / iOS)?",
+    a: "Open compressimagesize.com in your mobile browser (Safari, Chrome, or Firefox). Tap 'Browse Files', select photos from your iPhone or Android gallery, choose your target KB size, and tap compress. No app installation required."
+  },
+  {
+    q: "How to compress image size in laptop or Mac?",
+    a: "On your laptop or computer, drag and drop single photos, multiple files, or `.zip` folders directly into our browser compressor. Adjust resolution or target KB limits and click 'Compress Images' to download your optimized files."
+  },
+  {
+    q: "How to compress JPG / JPEG images?",
+    a: "Upload your JPG or JPEG photo to our compressor. Our browser engine optimizes quantization tables and strips bloated EXIF camera metadata to reduce JPG file size up to 80% while retaining sharpness."
+  },
+  {
+    q: "How to compress image to 50KB, 100KB, or 20KB?",
+    a: "Select the '50 KB' or '100 KB' preset pill. For specific requirements like 20KB for passport or government forms, enter '20' in the target size input box. Our smart algorithm automatically computes the optimal canvas quality and dimensions."
+  },
+  {
+    q: "How to compress image without losing quality?",
+    a: "To compress images without visible quality loss, convert your images to modern WEBP or AVIF formats or use an 80-85% quality setting. This removes redundant color bytes while preserving crisp edges."
+  },
+  {
+    q: "How to compress image in Microsoft Paint?",
+    a: "In MS Paint, open your image, click 'Resize' on the Home tab, reduce the percentage or pixel width/height, and click 'Save As' JPEG. For automatic target size compression, use compressimagesize.com directly in your web browser."
+  },
+  {
+    q: "How to compress multiple images or ZIP files?",
+    a: "Drag and drop your `.zip` archive or select multiple photo files simultaneously. Our tool extracts all images in browser memory, compresses each file to your target KB budget, and lets you download a single re-zipped file."
+  },
+  {
+    q: "Is compressimagesize.com free and private?",
+    a: "Yes! It is 100% free with no registration, no file caps, and zero server uploads. All image calculations run locally in your web browser."
+  }
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(f => ({
+    "@type": "Question",
+    "name": f.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": f.a
+    }
+  }))
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+
+<section class="py-16 sm:py-24 border-b border-surface-200 bg-surface-50">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6">
+    
+    <div class="text-center mb-12">
+      <span class="text-xs font-semibold text-brand-600 tracking-wider uppercase">Got Questions?</span>
+      <h2 class="text-2xl sm:text-4xl font-bold text-surface-900 tracking-tight mt-1.5">
+        Frequently Asked Questions
+      </h2>
+      <p class="text-sm sm:text-base text-surface-500 mt-2">
+        Guides and answers for compressing images on mobile, iPhone, laptop, and target KB sizes.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      {faqs.map((f, i) => (
+        <details class="bg-white border border-surface-200 rounded-xl p-5 group [&_summary::-webkit-details-marker]:hidden shadow-subtle cursor-pointer" open={i === 0}>
+          <summary class="flex items-center justify-between font-semibold text-sm sm:text-base text-surface-900 list-none select-none">
+            <span>{f.q}</span>
+            <span class="ml-4 transition-transform group-open:rotate-180 text-surface-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </span>
+          </summary>
+          <p class="text-xs sm:text-sm text-surface-600 leading-relaxed mt-3 pt-3 border-t border-surface-100">
+            {f.a}
+          </p>
+        </details>
+      ))}
+    </div>
+
+  </div>
+</section>

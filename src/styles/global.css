@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #111827;
+    background-color: #ffffff;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+}
+
+/* Linear-style Grid pattern background background */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(229, 231, 235, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(229, 231, 235, 0.5) 1px, transparent 1px);
+}
+
+/* Custom linear style range slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 6px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  background-color: #2563eb;
+  border-radius: 9999px;
+  height: 16px;
+  width: 16px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-track {
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 6px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background-color: #2563eb;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  height: 16px;
+  width: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

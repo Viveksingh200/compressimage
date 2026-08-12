@@ -1,0 +1,40 @@
+---
+const formats = [
+  { name: "JPG / JPEG", tag: "Joint Photographic Experts Group", desc: "Most widely used photo format. Ideal for digital photos and camera captures with rich colors.", badge: "Universal" },
+  { name: "PNG", tag: "Portable Network Graphics", desc: "Supports lossless compression and transparent backgrounds. Great for logos, icons, and graphics.", badge: "Lossless" },
+  { name: "WEBP", tag: "Web Picture Format", desc: "Modern web standard developed by Google. Delivers 25-35% smaller file sizes than JPG with identical quality.", badge: "Recommended" },
+  { name: "AVIF", tag: "AV1 Image File Format", desc: "Next-generation image codec providing up to 50% smaller sizes than WebP with high dynamic range.", badge: "Next-Gen" },
+  { name: "ZIP", tag: "Archive Package", desc: "Extracts and compresses all embedded images inside compressed folder archives automatically.", badge: "Bulk Archive" }
+];
+---
+
+<section class="py-16 sm:py-24 border-b border-surface-200 bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    
+    <div class="max-w-2xl mx-auto text-center mb-12">
+      <span class="text-xs font-semibold text-brand-600 tracking-wider uppercase">Format Compatibility</span>
+      <h2 class="text-2xl sm:text-4xl font-bold text-surface-900 tracking-tight mt-1.5">
+        Supported Image & Archive Formats
+      </h2>
+      <p class="text-sm sm:text-base text-surface-500 mt-2">
+        Full cross-browser decoding and encoding support.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      {formats.map((f) => (
+        <div class="bg-surface-50 border border-surface-200 rounded-xl p-5 hover:border-brand-500/40 hover:bg-white transition-all shadow-subtle flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-bold text-lg text-surface-900">{f.name}</h3>
+              <span class="text-[11px] font-semibold text-brand-700 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-full">{f.badge}</span>
+            </div>
+            <p class="text-xs font-medium text-surface-500 mb-3">{f.tag}</p>
+            <p class="text-xs text-surface-600 leading-relaxed">{f.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>

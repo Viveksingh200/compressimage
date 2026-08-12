@@ -177,8 +177,10 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
     };
   };
 
+  const hasSuccessFiles = files.some(f => f.status === 'success');
+
+  // Compute live estimated bytes dynamically from current slider positions
   const totalEstimatedOutputBytes = files.reduce((acc, f) => {
-    if (f.status === 'success') return acc + f.compressedSize;
     return acc + calculateEstimate(f.originalSize).estBytes;
   }, 0);
 
@@ -186,6 +188,14 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
   const totalEstimatedSavedPercent = totalOriginalSize > 0 
     ? Math.round((totalEstimatedSavedBytes / totalOriginalSize) * 100) 
     : 0;
+
+  // Helper to update settings and enable live estimation & re-compression
+  const handleSettingChange = (changeFn) => {
+    changeFn();
+    if (hasSuccessFiles) {
+      setFiles(prev => prev.map(f => ({ ...f, status: 'pending' })));
+    }
+  };
 
   const successCount = files.filter((f) => f.status === 'success').length;
 
@@ -277,7 +287,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
               <button
                 key={p.label}
                 suppressHydrationWarning
-                onClick={() => { setMode('targetSize'); setPresetKb(p.value); }}
+                onClick={() => handleSettingChange(() => { setMode('targetSize'); setPresetKb(p.value); })}
                 className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                   mode === 'targetSize' && presetKb === p.value
                     ? 'bg-brand-600 text-white shadow-subtle'
@@ -290,7 +300,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
 
             <button
               suppressHydrationWarning
-              onClick={() => setMode('quality')}
+              onClick={() => handleSettingChange(() => setMode('quality'))}
               className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 mode === 'quality'
                   ? 'bg-brand-600 text-white shadow-subtle'
@@ -301,8 +311,6 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             </button>
           </div>
         </div>
-
-        
 
         {/* Dynamic Controls Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -320,7 +328,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
                   min="10"
                   max="10000"
                   value={presetKb}
-                  onChange={(e) => setPresetKb(Number(e.target.value))}
+                  onChange={(e) => handleSettingChange(() => setPresetKb(Number(e.target.value)))}
                   className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
                 />
                 <span className="text-xs sm:text-sm text-surface-500 font-semibold">KB</span>
@@ -337,7 +345,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
                 min="5"
                 max="95"
                 value={quality}
-                onChange={(e) => setQuality(Number(e.target.value))}
+                onChange={(e) => handleSettingChange(() => setQuality(Number(e.target.value)))}
                 className="w-full my-auto"
               />
             </div>
@@ -355,7 +363,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
               max="100"
               step="5"
               value={scalePercent}
-              onChange={(e) => setScalePercent(Number(e.target.value))}
+              onChange={(e) => handleSettingChange(() => setScalePercent(Number(e.target.value)))}
               className="w-full my-auto"
             />
           </div>
@@ -365,7 +373,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             <label className="text-xs sm:text-sm font-semibold text-surface-700">Output Format</label>
             <select
               value={format}
-              onChange={(e) => setFormat(e.target.value)}
+              onChange={(e) => handleSettingChange(() => setFormat(e.target.value))}
               className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
             >
               <option value="original">Keep Original Format</option>

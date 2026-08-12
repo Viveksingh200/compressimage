@@ -21,7 +21,6 @@ export async function compressSingleImage(imageItem, options = {}) {
   let mimeType = format;
   if (format === 'original') {
     mimeType = imageItem.type || 'image/jpeg';
-    // Fallback unsupported types to webp
     if (!['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(mimeType)) {
       mimeType = 'image/jpeg';
     }
@@ -39,13 +38,13 @@ export async function compressSingleImage(imageItem, options = {}) {
   let canvasWidth = Math.max(1, Math.round(srcWidth * scale));
   let canvasHeight = Math.max(1, Math.round(srcHeight * scale));
 
-  // Create offscreen or regular canvas
+  // Create canvas
   const canvas = document.createElement('canvas');
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
   const ctx = canvas.getContext('2d', { alpha: mimeType !== 'image/jpeg' });
 
-  // White background for JPEG if transparency present
+  // Fill white background for JPEGs if needed
   if (mimeType === 'image/jpeg') {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -63,16 +62,32 @@ export async function compressSingleImage(imageItem, options = {}) {
       initialHeight: canvasHeight,
       mimeType,
       targetBytes,
+      originalSize: imageItem.originalSize
     });
   }
 
-  // ELSE fixed quality mode
-  let finalBlob = await canvasToBlob(canvas, mimeType, quality);
+  // ELSE Fixed Quality Mode
+  // Note: HTML5 Canvas `canvas.toBlob('image/png')` ignores the quality argument because PNG is lossless.
+  // If PNG format is requested and quality < 0.95 or scaling is applied, we fallback to WEBP (or JPEG if no alpha)
+  // so that lossy quality compression actually reduces file size instead of bloating it.
+  let targetMime = mimeType;
+  if (mimeType === 'image/png' && (quality < 0.95 || scalePercent < 100)) {
+    const hasAlpha = checkCanvasAlpha(ctx, canvasWidth, canvasHeight);
+    targetMime = hasAlpha ? 'image/webp' : 'image/jpeg';
+    if (targetMime === 'image/jpeg') {
+      // Re-fill white bg for JPEG conversion
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
+  }
 
-  // Fallback if browser doesn't support requested format export (e.g. AVIF fallback to WEBP)
-  if (!finalBlob) {
-    mimeType = 'image/webp';
-    finalBlob = await canvasToBlob(canvas, mimeType, quality);
+  let finalBlob = await canvasToBlob(canvas, targetMime, quality);
+
+  // If blob failed or PNG output grew larger than original file size, force WEBP compression
+  if (!finalBlob || (targetMime === 'image/png' && finalBlob.size >= imageItem.originalSize)) {
+    targetMime = 'image/webp';
+    finalBlob = await canvasToBlob(canvas, targetMime, quality);
   }
 
   const compressedSize = finalBlob ? finalBlob.size : imageItem.originalSize;
@@ -92,7 +107,7 @@ export async function compressSingleImage(imageItem, options = {}) {
     width: canvasWidth,
     height: canvasHeight,
     qualityUsed: Math.round(quality * 100),
-    outputFormat: mimeType.split('/')[1].toUpperCase(),
+    outputFormat: targetMime.split('/')[1].toUpperCase(),
     status: 'success'
   };
 }
@@ -100,22 +115,24 @@ export async function compressSingleImage(imageItem, options = {}) {
 /**
  * Binary search quality & dimension scaling engine to match target file size KB.
  */
-async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, mimeType, targetBytes }) {
+async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, mimeType, targetBytes, originalSize }) {
   let currentWidth = initialWidth;
   let currentHeight = initialHeight;
   let workCanvas = canvas;
-  let targetMime = mimeType === 'image/png' ? 'image/webp' : mimeType; // PNG quality cannot be adjusted by browser canvas quality param
+
+  // For target size compression on PNGs, use WebP or JPEG because HTML canvas PNG export ignores quality settings
+  let targetMime = mimeType === 'image/png' ? 'image/webp' : mimeType;
 
   let bestBlob = null;
   let bestQuality = 0.85;
 
-  // Run up to 3 dimension scaling passes if image resolution is huge
-  for (let pass = 0; pass < 3; pass++) {
+  // Run up to 4 dimension scaling passes if image resolution is huge
+  for (let pass = 0; pass < 4; pass++) {
     let minQ = 0.05;
     let maxQ = 0.95;
     let iterations = 0;
 
-    while (minQ <= maxQ && iterations < 7) {
+    while (minQ <= maxQ && iterations < 8) {
       iterations++;
       const midQ = (minQ + maxQ) / 2;
       const testBlob = await canvasToBlob(workCanvas, targetMime, midQ);
@@ -126,10 +143,10 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
         bestBlob = testBlob;
         bestQuality = midQ;
         // Try to get higher quality while remaining <= targetBytes
-        minQ = midQ + 0.05;
+        minQ = midQ + 0.04;
       } else {
         // Blob is too large, lower the quality
-        maxQ = midQ - 0.05;
+        maxQ = midQ - 0.04;
       }
     }
 
@@ -138,9 +155,9 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
       break;
     }
 
-    // If still over targetBytes even at low quality, scale down canvas resolution by 25% and retry pass
-    currentWidth = Math.max(16, Math.round(currentWidth * 0.75));
-    currentHeight = Math.max(16, Math.round(currentHeight * 0.75));
+    // If still over targetBytes even at low quality, scale down canvas resolution by 20% and retry pass
+    currentWidth = Math.max(16, Math.round(currentWidth * 0.80));
+    currentHeight = Math.max(16, Math.round(currentHeight * 0.80));
 
     workCanvas = document.createElement('canvas');
     workCanvas.width = currentWidth;
@@ -158,19 +175,37 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
     bestBlob = await canvasToBlob(workCanvas, targetMime, 0.1);
   }
 
-  const compressedSize = bestBlob ? bestBlob.size : targetBytes;
+  const compressedSize = bestBlob ? bestBlob.size : originalSize;
   const compressedUrl = bestBlob ? URL.createObjectURL(bestBlob) : '';
+  const savedBytes = Math.max(0, originalSize - compressedSize);
+  const savedPercent = originalSize > 0 
+    ? Math.max(0, Math.round((savedBytes / originalSize) * 100))
+    : 0;
 
   return {
     compressedBlob: bestBlob,
     compressedSize,
     compressedUrl,
+    savedBytes,
+    savedPercent,
     width: currentWidth,
     height: currentHeight,
     qualityUsed: Math.round(bestQuality * 100),
     outputFormat: targetMime.split('/')[1].toUpperCase(),
     status: 'success'
   };
+}
+
+function checkCanvasAlpha(ctx, width, height) {
+  try {
+    const sampleWidth = Math.min(width, 100);
+    const sampleHeight = Math.min(height, 100);
+    const imgData = ctx.getImageData(0, 0, sampleWidth, sampleHeight).data;
+    for (let i = 3; i < imgData.length; i += 4) {
+      if (imgData[i] < 255) return true;
+    }
+  } catch (e) {}
+  return false;
 }
 
 function loadImage(src) {

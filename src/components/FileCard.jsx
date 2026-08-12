@@ -36,7 +36,13 @@ export default function FileCard({ item, onRemove }) {
         
         {/* Left: Thumbnail & Info */}
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="relative w-14 h-14 rounded-lg border border-surface-200 bg-surface-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
+          <div 
+            onClick={() => item.status === 'success' && setShowComparison(true)}
+            className={`relative w-14 h-14 rounded-lg border border-surface-200 bg-surface-50 overflow-hidden flex-shrink-0 flex items-center justify-center ${
+              item.status === 'success' ? 'cursor-pointer group hover:ring-2 hover:ring-brand-500' : ''
+            }`}
+            title={item.status === 'success' ? 'Click to preview quality & compare' : ''}
+          >
             {item.previewUrl ? (
               <img 
                 src={item.compressedUrl || item.previewUrl} 
@@ -45,6 +51,11 @@ export default function FileCard({ item, onRemove }) {
               />
             ) : (
               <ImageIcon className="w-6 h-6 text-surface-400" />
+            )}
+            {item.status === 'success' && (
+              <div className="absolute inset-0 bg-surface-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Eye className="w-4 h-4 text-white" />
+              </div>
             )}
             {item.isFromZip && (
               <span className="absolute top-1 left-1 bg-surface-900 text-white p-0.5 rounded text-[10px]" title={`From ZIP: ${item.zipName}`}>
@@ -121,11 +132,11 @@ export default function FileCard({ item, onRemove }) {
               <>
                 <button
                   onClick={() => setShowComparison(true)}
-                  className="p-2.5 text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-xl transition-colors border border-surface-200 shadow-subtle"
-                  title="Compare Before / After"
-                  aria-label="Compare original and compressed image"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-surface-100 hover:bg-surface-200 text-surface-800 rounded-xl font-semibold text-xs sm:text-sm transition-colors border border-surface-200 shadow-subtle"
+                  title="Compare original & compressed quality"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-4 h-4 text-brand-600" />
+                  <span>Preview</span>
                 </button>
 
                 <button

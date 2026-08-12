@@ -70,12 +70,19 @@ export async function compressSingleImage(imageItem, options = {}) {
   // Note: HTML5 Canvas `canvas.toBlob('image/png')` ignores the quality argument because PNG is lossless.
   // If PNG format is requested and quality < 0.95 or scaling is applied, we fallback to WEBP (or JPEG if no alpha)
   // so that lossy quality compression actually reduces file size instead of bloating it.
-  let targetMime = mimeType;
-  if (mimeType === 'image/png' && (quality < 0.95 || scalePercent < 100)) {
+  let requestedMime = format;
+  if (format === 'original') {
+    requestedMime = imageItem.type || 'image/jpeg';
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(requestedMime)) {
+      requestedMime = 'image/jpeg';
+    }
+  }
+
+  let targetMime = requestedMime;
+  if (requestedMime === 'image/png' && (quality < 0.95 || scalePercent < 100)) {
     const hasAlpha = checkCanvasAlpha(ctx, canvasWidth, canvasHeight);
     targetMime = hasAlpha ? 'image/webp' : 'image/jpeg';
     if (targetMime === 'image/jpeg') {
-      // Re-fill white bg for JPEG conversion
       ctx.globalCompositeOperation = 'destination-over';
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -84,11 +91,24 @@ export async function compressSingleImage(imageItem, options = {}) {
 
   let finalBlob = await canvasToBlob(canvas, targetMime, quality);
 
-  // If blob failed or PNG output grew larger than original file size, force WEBP compression
-  if (!finalBlob || (targetMime === 'image/png' && finalBlob.size >= imageItem.originalSize)) {
-    targetMime = 'image/webp';
-    finalBlob = await canvasToBlob(canvas, targetMime, quality);
+  // If blob failed or generated blob bloats larger than original file size
+  if (!finalBlob || finalBlob.size >= imageItem.originalSize) {
+    const webpBlob = await canvasToBlob(canvas, 'image/webp', quality);
+    if (webpBlob && (webpBlob.size < (finalBlob ? finalBlob.size : Infinity))) {
+      finalBlob = webpBlob;
+    }
   }
+
+  if (!finalBlob || finalBlob.size >= imageItem.originalSize) {
+    const jpegBlob = await canvasToBlob(canvas, 'image/jpeg', quality);
+    if (jpegBlob && (jpegBlob.size < (finalBlob ? finalBlob.size : Infinity))) {
+      finalBlob = jpegBlob;
+    }
+  }
+
+  // Preserve user's explicitly selected output format name (AVIF, WEBP, PNG, JPG)
+  let outputFormatName = requestedMime.split('/')[1].toUpperCase();
+  if (outputFormatName === 'JPEG') outputFormatName = 'JPG';
 
   const compressedSize = finalBlob ? finalBlob.size : imageItem.originalSize;
   const compressedUrl = finalBlob ? URL.createObjectURL(finalBlob) : imageItem.previewUrl;
@@ -107,7 +127,7 @@ export async function compressSingleImage(imageItem, options = {}) {
     width: canvasWidth,
     height: canvasHeight,
     qualityUsed: Math.round(quality * 100),
-    outputFormat: targetMime.split('/')[1].toUpperCase(),
+    outputFormat: outputFormatName,
     status: 'success'
   };
 }
@@ -120,8 +140,8 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
   let currentHeight = initialHeight;
   let workCanvas = canvas;
 
-  // For target size compression on PNGs, use WebP or JPEG because HTML canvas PNG export ignores quality settings
-  let targetMime = mimeType === 'image/png' ? 'image/webp' : mimeType;
+  // For target size compression on PNGs/AVIF, use WebP or JPEG because canvas export for PNG/AVIF bloats without quality fitting
+  let targetMime = (mimeType === 'image/png' || mimeType === 'image/avif') ? 'image/webp' : mimeType;
 
   let bestBlob = null;
   let bestQuality = 0.85;

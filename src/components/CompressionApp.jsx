@@ -1,55 +1,39 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Upload, 
-  FileArchive, 
-  Download, 
-  Trash2, 
-  Settings2, 
-  Zap, 
-  CheckCircle2, 
-  ShieldCheck, 
-  RefreshCw,
-  FolderArchive,
-  Loader2
-} from 'lucide-react';
+import { Upload, FolderArchive, RefreshCw, Download, Zap, Settings2, Trash2, CheckCircle2, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { processInputFiles, formatBytes } from '../utils/fileHandler';
-import { compressSingleImage } from '../utils/compressorEngine';
-import { downloadAllAsZip } from '../utils/zipGenerator';
 import FileCard from './FileCard';
+import { compressSingleImage } from '../utils/compressorEngine';
+import { processInputFiles, formatBytes } from '../utils/fileHandler';
+import { downloadAllAsZip } from '../utils/zipGenerator';
 
-export default function CompressionApp({ initialPreset = '100kb', initialFormat = 'original' }) {
+export default function CompressionApp() {
   const [files, setFiles] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Settings State
-  const [mode, setMode] = useState('quality'); // 'quality' by default | 'targetSize'
-  const [presetKb, setPresetKb] = useState(() => {
-    if (initialPreset === '50kb') return 50;
-    if (initialPreset === '100kb') return 100;
-    if (initialPreset === '200kb') return 200;
-    if (initialPreset === '500kb') return 500;
-    if (initialPreset === '1mb') return 1024;
-    if (initialPreset === '2mb') return 2048;
-    return 100;
-  });
-  const [customKb, setCustomKb] = useState(100);
+  // Compression Controls
   const [quality, setQuality] = useState(80);
-  const [format, setFormat] = useState(() => {
-    if (initialFormat === 'jpg') return 'image/jpeg';
-    if (initialFormat === 'png') return 'image/png';
-    if (initialFormat === 'webp') return 'image/webp';
-    if (initialFormat === 'avif') return 'image/avif';
-    return 'original';
-  });
+  const [format, setFormat] = useState('original');
   const [scalePercent, setScalePercent] = useState(100);
+  const [mode, setMode] = useState('quality'); // 'targetSize' or 'quality'
+  const [presetKb, setPresetKb] = useState(200);
 
   const fileInputRef = useRef(null);
+  const uploadedSectionRef = useRef(null);
+  const prevFilesLength = useRef(files.length);
 
-  // Handle Drag Events
+  useEffect(() => {
+    if (files.length > 0 && prevFilesLength.current === 0) {
+      setTimeout(() => {
+        uploadedSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+    prevFilesLength.current = files.length;
+  }, [files.length]);
+
+  // Drag & Drop Handlers
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -66,35 +50,31 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setIsUploading(true);
-      try {
-        const processed = await processInputFiles(e.dataTransfer.files);
-        setFiles((prev) => [...prev, ...processed]);
-      } catch (err) {
-        console.error("Error reading dropped files:", err);
-      } finally {
-        setIsUploading(false);
-      }
+      await processFiles(Array.from(e.dataTransfer.files));
     }
   };
 
   const handleFileSelect = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setIsUploading(true);
-      try {
-        const processed = await processInputFiles(e.target.files);
-        setFiles((prev) => [...prev, ...processed]);
-      } catch (err) {
-        console.error("Error reading selected files:", err);
-      } finally {
-        setIsUploading(false);
-      }
+      await processFiles(Array.from(e.target.files));
     }
   };
 
-  // Run Batch Compression
+  const processFiles = async (fileList) => {
+    setIsUploading(true);
+    try {
+      const parsedItems = await processInputFiles(fileList);
+      setFiles((prev) => [...prev, ...parsedItems]);
+    } catch (err) {
+      console.error("Error processing files:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Run Compression for all pending files
   const runCompression = async () => {
     if (files.length === 0 || isProcessing) return;
 
@@ -164,7 +144,6 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
       const targetBytes = presetKb * 1024;
       estBytes = Math.min(fileOriginalSize, targetBytes);
     } else {
-      // Quality mode approximation
       const ratio = (quality / 100) * 0.65 * (scalePercent / 100);
       estBytes = Math.min(fileOriginalSize, Math.max(1024, fileOriginalSize * ratio));
     }
@@ -202,7 +181,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-6">
       
-      {/* Upload Zone */}
+      {/* Upload Dropzone */}
       <div 
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -250,10 +229,10 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
           </div>
         </div>
 
-        {/* Transparent Loader Overlay when processing uploaded/unzipped files */}
+        {/* Loader Overlay when processing uploaded/unzipped files */}
         {isUploading && (
           <div className="absolute inset-0 bg-white/90 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center gap-3 z-30 animate-fade-in pointer-events-auto">
-            <div className="w-12 h-12 items-center justify-center">
+            <div className="w-12 h-12 flex items-center justify-center">
               <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
             </div>
             <div className="text-center">
@@ -264,133 +243,133 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
         )}
       </div>
 
-      {/* Compression Control Panel */}
-      <div className="bg-white border border-surface-200 rounded-2xl p-6 sm:p-8 shadow-subtle flex flex-col gap-6">
-        
-        {/* Preset Selector Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-surface-100">
-          <div className="flex items-center gap-2.5">
-            <Settings2 className="w-5 h-5 text-brand-600" />
-            <h4 className="font-bold text-base text-surface-900">Compression Presets</h4>
-          </div>
-
-          {/* Preset Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { label: '50 KB', value: 50 },
-              { label: '100 KB', value: 100 },
-              { label: '200 KB', value: 200 },
-              { label: '500 KB', value: 500 },
-              { label: '1 MB', value: 1024 },
-              { label: '2 MB', value: 2048 },
-            ].map((p) => (
-              <button
-                key={p.label}
-                suppressHydrationWarning
-                onClick={() => handleSettingChange(() => { setMode('targetSize'); setPresetKb(p.value); })}
-                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                  mode === 'targetSize' && presetKb === p.value
-                    ? 'bg-brand-600 text-white shadow-subtle'
-                    : 'bg-surface-100 text-surface-700 border border-surface-200 hover:bg-surface-200'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-
-            <button
-              suppressHydrationWarning
-              onClick={() => handleSettingChange(() => setMode('quality'))}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                mode === 'quality'
-                  ? 'bg-brand-600 text-white shadow-subtle'
-                  : 'bg-surface-100 text-surface-700 border border-surface-200 hover:bg-surface-200'
-              }`}
-            >
-              Custom Quality
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Controls Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {/* Uploaded Section: Appears once files are uploaded */}
+      {files.length > 0 && (
+        <div ref={uploadedSectionRef} className="flex flex-col gap-6 animate-fade-in">
           
-          {/* Target Size or Quality Setting */}
-          {mode === 'targetSize' ? (
-            <div className="flex flex-col gap-2">
-              <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
-                <span>Target File Size</span>
-                <span className="font-bold text-brand-600">{presetKb >= 1024 ? `${(presetKb / 1024).toFixed(1)} MB` : `${presetKb} KB`}</span>
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="10"
-                  max="10000"
-                  value={presetKb}
-                  onChange={(e) => handleSettingChange(() => setPresetKb(Number(e.target.value)))}
-                  className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
-                />
-                <span className="text-xs sm:text-sm text-surface-500 font-semibold">KB</span>
+          {/* Compression Control Panel */}
+          <div className="bg-white border border-surface-200 rounded-2xl p-6 sm:p-8 shadow-subtle flex flex-col gap-6">
+            
+            {/* Preset Selector Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-surface-100">
+              <div className="flex items-center gap-2.5">
+                <Settings2 className="w-5 h-5 text-brand-600" />
+                <h4 className="font-bold text-base text-surface-900">Compression Presets</h4>
+              </div>
+
+              {/* Preset Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { label: '50 KB', value: 50 },
+                  { label: '100 KB', value: 100 },
+                  { label: '200 KB', value: 200 },
+                  { label: '500 KB', value: 500 },
+                  { label: '1 MB', value: 1024 },
+                  { label: '2 MB', value: 2048 },
+                ].map((p) => (
+                  <button
+                    key={p.label}
+                    suppressHydrationWarning
+                    onClick={() => handleSettingChange(() => { setMode('targetSize'); setPresetKb(p.value); })}
+                    className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                      mode === 'targetSize' && presetKb === p.value
+                        ? 'bg-brand-600 text-white shadow-subtle'
+                        : 'bg-surface-100 text-surface-700 border border-surface-200 hover:bg-surface-200'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+
+                <button
+                  suppressHydrationWarning
+                  onClick={() => handleSettingChange(() => setMode('quality'))}
+                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                    mode === 'quality'
+                      ? 'bg-brand-600 text-white shadow-subtle'
+                      : 'bg-surface-100 text-surface-700 border border-surface-200 hover:bg-surface-200'
+                  }`}
+                >
+                  Custom Quality
+                </button>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
-                <span>Compression Quality</span>
-                <span className="font-bold text-brand-600">{quality}%</span>
-              </label>
-              <input
-                type="range"
-                min="5"
-                max="95"
-                value={quality}
-                onChange={(e) => handleSettingChange(() => setQuality(Number(e.target.value)))}
-                className="w-full my-auto"
-              />
+
+            {/* Dynamic Controls Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              
+              {/* Target Size or Quality Setting */}
+              {mode === 'targetSize' ? (
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
+                    <span>Target File Size</span>
+                    <span className="font-bold text-brand-600">{presetKb >= 1024 ? `${(presetKb / 1024).toFixed(1)} MB` : `${presetKb} KB`}</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="10"
+                      max="10000"
+                      value={presetKb}
+                      onChange={(e) => handleSettingChange(() => setPresetKb(Number(e.target.value)))}
+                      className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
+                    />
+                    <span className="text-xs sm:text-sm text-surface-500 font-semibold">KB</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
+                    <span>Compression Quality</span>
+                    <span className="font-bold text-brand-600">{quality}%</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="95"
+                    value={quality}
+                    onChange={(e) => handleSettingChange(() => setQuality(Number(e.target.value)))}
+                    className="w-full my-auto"
+                  />
+                </div>
+              )}
+
+              {/* Scale / Resize */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
+                  <span>Resolution Scaling</span>
+                  <span className="font-bold text-brand-600">{scalePercent}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="20"
+                  max="100"
+                  step="5"
+                  value={scalePercent}
+                  onChange={(e) => handleSettingChange(() => setScalePercent(Number(e.target.value)))}
+                  className="w-full my-auto"
+                />
+              </div>
+
+              {/* Format Selector */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-surface-700">Output Format</label>
+                <select
+                  value={format}
+                  onChange={(e) => handleSettingChange(() => setFormat(e.target.value))}
+                  className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
+                >
+                  <option value="original">Keep Original Format</option>
+                  <option value="image/webp">WEBP (Highly Recommended)</option>
+                  <option value="image/jpeg">JPG / JPEG</option>
+                  <option value="image/png">PNG</option>
+                  <option value="image/avif">AVIF</option>
+                </select>
+              </div>
             </div>
-          )}
 
-          {/* Scale / Resize */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
-              <span>Resolution Scaling</span>
-              <span className="font-bold text-brand-600">{scalePercent}%</span>
-            </label>
-            <input
-              type="range"
-              min="20"
-              max="100"
-              step="5"
-              value={scalePercent}
-              onChange={(e) => handleSettingChange(() => setScalePercent(Number(e.target.value)))}
-              className="w-full my-auto"
-            />
-          </div>
-
-          {/* Format Selector */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs sm:text-sm font-semibold text-surface-700">Output Format</label>
-            <select
-              value={format}
-              onChange={(e) => handleSettingChange(() => setFormat(e.target.value))}
-              className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
-            >
-              <option value="original">Keep Original Format</option>
-              <option value="image/webp">WEBP (Highly Recommended)</option>
-              <option value="image/jpeg">JPG / JPEG</option>
-              <option value="image/png">PNG</option>
-              <option value="image/avif">AVIF</option>
-            </select>
-          </div>
-        </div>
-
-        
-
-        {/* Action Trigger Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-3">
-          <div>
-            {files.length > 0 ? (
+            {/* Summary Bar & Compress Trigger */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-surface-100">
               <div className="flex flex-col gap-1">
                 <p className="font-bold text-surface-900 text-sm sm:text-base">
                   Original Size: <span className="text-surface-600 font-semibold">{formatBytes(totalOriginalSize)}</span> → Expected Output: <span className="text-brand-600 font-extrabold">{formatBytes(totalEstimatedOutputBytes)}</span>
@@ -402,66 +381,56 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
                   Total Uploaded: <span className="font-bold text-surface-900">{files.length} {files.length === 1 ? 'image' : 'images'}</span>
                 </p>
               </div>
-            ) : (
-              <span className="text-xs sm:text-sm text-surface-500 font-medium">Upload images or a ZIP file above to begin compression</span>
-            )}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={clearAll}
+                  disabled={isProcessing}
+                  className="px-4 py-2.5 text-surface-600 hover:text-danger hover:bg-danger-50 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear All
+                </button>
+
+                <button
+                  onClick={runCompression}
+                  disabled={isProcessing}
+                  className={`px-6 py-3 rounded-xl font-bold text-sm sm:text-base text-white shadow-subtle flex items-center gap-2.5 transition-all ${
+                    isProcessing
+                      ? 'bg-surface-300 cursor-not-allowed'
+                      : 'bg-brand-600 hover:bg-brand-700 shadow-md hover:scale-[1.01]'
+                  }`}
+                >
+                  {isProcessing ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      <span>Compressing... ({progress}%)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5" />
+                      <span>Compress Images</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          <div className="flex items-center gap-3">
-            {files.length > 0 && (
-              <button
-                onClick={clearAll}
-                disabled={isProcessing}
-                className="px-4 py-2.5 text-surface-600 hover:text-danger hover:bg-danger-50 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center gap-1.5"
-              >
-                <Trash2 className="w-4 h-4" />
-                Clear All
-              </button>
-            )}
+          {/* Batch Progress Bar */}
+          {isProcessing && (
+            <div className="w-full bg-surface-100 rounded-full h-2 overflow-hidden border border-surface-200 animate-fade-in">
+              <div 
+                className="bg-brand-600 h-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
 
-            <button
-              onClick={runCompression}
-              disabled={files.length === 0 || isProcessing}
-              className={`px-6 py-3 rounded-xl font-bold text-sm sm:text-base text-white shadow-subtle flex items-center gap-2.5 transition-all ${
-                files.length === 0 || isProcessing
-                  ? 'bg-surface-300 cursor-not-allowed'
-                  : 'bg-brand-600 hover:bg-brand-700 shadow-md hover:scale-[1.01]'
-              }`}
-            >
-              {isProcessing ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  <span>Compressing... ({progress}%)</span>
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5" />
-                  <span>Compress Images</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Batch Progress Bar */}
-      {isProcessing && (
-        <div className="w-full bg-surface-100 rounded-full h-2 overflow-hidden border border-surface-200 animate-fade-in">
-          <div 
-            className="bg-brand-600 h-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      )}
-
-      {/* File List & Output Summary */}
-      {files.length > 0 && (
-        <div className="flex flex-col gap-4 animate-fade-in">
-          
-          {/* Summary Header */}
+          {/* Compressed Batch Result Banner */}
           {successCount > 0 && (
-            <div className="bg-success-50 border border-success/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-success-50 border border-success/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center flex-shrink-0">
                   <CheckCircle2 className="w-5 h-5" />
@@ -486,7 +455,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             </div>
           )}
 
-          {/* Cards Stack */}
+          {/* Cards Stack List */}
           <div className="flex flex-col gap-2.5">
             {files.map((file) => {
               const estimate = calculateEstimate(file.originalSize);

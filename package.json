@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^3.6.2",
+    "@astrojs/sitemap": "^3.7.3",
     "@astrojs/tailwind": "^5.1.0",
     "astro": "^4.15.4",
     "canvas-confetti": "^1.9.3",

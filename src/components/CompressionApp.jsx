@@ -214,27 +214,27 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
           id="file-upload-input"
         />
 
-        <div className="flex flex-col items-center justify-center gap-4 max-w-md mx-auto pointer-events-none">
-          <div className="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center shadow-subtle">
-            <Upload className="w-7 h-7" />
+        <div className="flex flex-col items-center justify-center gap-4 max-w-lg mx-auto pointer-events-none">
+          <div className="w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center shadow-subtle">
+            <Upload className="w-8 h-8" />
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-surface-900 tracking-tight">
+            <h3 className="text-xl sm:text-2xl font-bold text-surface-900 tracking-tight">
               Drop your images or ZIP file here
             </h3>
-            <p className="text-xs sm:text-sm text-surface-500 mt-1">
+            <p className="text-sm sm:text-base text-surface-500 mt-1.5 font-medium">
               Supports JPG, PNG, WebP, AVIF & ZIP archives. 100% private in browser.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-            <span className="px-4 py-2 bg-brand-600 text-white font-medium text-xs rounded-lg shadow-subtle hover:bg-brand-700 transition-colors flex items-center gap-1.5 pointer-events-auto">
-              <Upload className="w-3.5 h-3.5" />
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <span className="px-5 py-2.5 bg-brand-600 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-subtle hover:bg-brand-700 transition-colors flex items-center gap-2 pointer-events-auto">
+              <Upload className="w-4 h-4" />
               Browse Files
             </span>
-            <span className="px-4 py-2 bg-surface-100 text-surface-700 font-medium text-xs rounded-lg border border-surface-200 hover:bg-surface-200 transition-colors flex items-center gap-1.5 pointer-events-auto">
-              <FolderArchive className="w-3.5 h-3.5 text-surface-500" />
+            <span className="px-5 py-2.5 bg-surface-100 text-surface-700 font-semibold text-xs sm:text-sm rounded-xl border border-surface-200 hover:bg-surface-200 transition-colors flex items-center gap-2 pointer-events-auto">
+              <FolderArchive className="w-4 h-4 text-surface-500" />
               Upload ZIP
             </span>
           </div>
@@ -247,25 +247,25 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
               <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
             </div>
             <div className="text-center">
-              <h4 className="font-semibold text-sm text-surface-900">Processing & Extracting Files...</h4>
-              <p className="text-xs text-surface-500 mt-1">Reading images from upload package</p>
+              <h4 className="font-semibold text-sm sm:text-base text-surface-900">Processing & Extracting Files...</h4>
+              <p className="text-xs sm:text-sm text-surface-500 mt-1">Reading images from upload package</p>
             </div>
           </div>
         )}
       </div>
 
       {/* Compression Control Panel */}
-      <div className="bg-white border border-surface-200 rounded-2xl p-5 sm:p-6 shadow-subtle flex flex-col gap-5">
+      <div className="bg-white border border-surface-200 rounded-2xl p-6 sm:p-8 shadow-subtle flex flex-col gap-6">
         
         {/* Preset Selector Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-100">
-          <div className="flex items-center gap-2">
-            <Settings2 className="w-4 h-4 text-brand-600" />
-            <h4 className="font-semibold text-sm text-surface-900">Compression Presets</h4>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-surface-100">
+          <div className="flex items-center gap-2.5">
+            <Settings2 className="w-5 h-5 text-brand-600" />
+            <h4 className="font-bold text-base text-surface-900">Compression Presets</h4>
           </div>
 
           {/* Preset Buttons */}
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             {[
               { label: '50 KB', value: 50 },
               { label: '100 KB', value: 100 },
@@ -278,7 +278,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
                 key={p.label}
                 suppressHydrationWarning
                 onClick={() => { setMode('targetSize'); setPresetKb(p.value); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                   mode === 'targetSize' && presetKb === p.value
                     ? 'bg-brand-600 text-white shadow-subtle'
                     : 'bg-surface-100 text-surface-700 border border-surface-200 hover:bg-surface-200'
@@ -291,7 +291,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             <button
               suppressHydrationWarning
               onClick={() => setMode('quality')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 mode === 'quality'
                   ? 'bg-brand-600 text-white shadow-subtle'
                   : 'bg-surface-100 text-surface-700 border border-surface-200 hover:bg-surface-200'
@@ -305,14 +305,14 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
         
 
         {/* Dynamic Controls Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           
           {/* Target Size or Quality Setting */}
           {mode === 'targetSize' ? (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-surface-700 flex justify-between">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
                 <span>Target File Size</span>
-                <span className="font-semibold text-brand-600">{presetKb >= 1024 ? `${(presetKb / 1024).toFixed(1)} MB` : `${presetKb} KB`}</span>
+                <span className="font-bold text-brand-600">{presetKb >= 1024 ? `${(presetKb / 1024).toFixed(1)} MB` : `${presetKb} KB`}</span>
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -321,16 +321,16 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
                   max="10000"
                   value={presetKb}
                   onChange={(e) => setPresetKb(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-surface-50 border border-surface-200 rounded-lg text-sm font-medium text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
                 />
-                <span className="text-xs text-surface-500 font-medium">KB</span>
+                <span className="text-xs sm:text-sm text-surface-500 font-semibold">KB</span>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-surface-700 flex justify-between">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
                 <span>Compression Quality</span>
-                <span className="font-semibold text-brand-600">{quality}%</span>
+                <span className="font-bold text-brand-600">{quality}%</span>
               </label>
               <input
                 type="range"
@@ -344,10 +344,10 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
           )}
 
           {/* Scale / Resize */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-surface-700 flex justify-between">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs sm:text-sm font-semibold text-surface-700 flex justify-between">
               <span>Resolution Scaling</span>
-              <span className="font-semibold text-brand-600">{scalePercent}%</span>
+              <span className="font-bold text-brand-600">{scalePercent}%</span>
             </label>
             <input
               type="range"
@@ -361,12 +361,12 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
           </div>
 
           {/* Format Selector */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-surface-700">Output Format</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs sm:text-sm font-semibold text-surface-700">Output Format</label>
             <select
               value={format}
               onChange={(e) => setFormat(e.target.value)}
-              className="w-full px-3 py-2 bg-surface-50 border border-surface-200 rounded-lg text-sm font-medium text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
+              className="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm sm:text-base font-semibold text-surface-900 focus:outline-none focus:border-brand-600 focus:bg-white transition-colors"
             >
               <option value="original">Keep Original Format</option>
               <option value="image/webp">WEBP (Highly Recommended)</option>
@@ -380,33 +380,33 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
         
 
         {/* Action Trigger Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          <div className="text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-3">
+          <div>
             {files.length > 0 ? (
-              <div className="flex flex-col gap-0.5">
-                <p className="font-semibold text-surface-900 text-xs sm:text-sm">
-                  Original Size: <span className="text-surface-600">{formatBytes(totalOriginalSize)}</span> → Expected Output: <span className="text-brand-600 font-bold">{formatBytes(totalEstimatedOutputBytes)}</span>
+              <div className="flex flex-col gap-1">
+                <p className="font-bold text-surface-900 text-sm sm:text-base">
+                  Original Size: <span className="text-surface-600 font-semibold">{formatBytes(totalOriginalSize)}</span> → Expected Output: <span className="text-brand-600 font-extrabold">{formatBytes(totalEstimatedOutputBytes)}</span>
                 </p>
-                <p className="text-xs text-surface-500">
-                  You will save approx. <strong className="text-success-600 font-semibold">{formatBytes(totalEstimatedSavedBytes)}</strong> ({totalEstimatedSavedPercent}% smaller)
+                <p className="text-xs sm:text-sm text-surface-600">
+                  You will save approx. <strong className="text-success-600 font-bold">{formatBytes(totalEstimatedSavedBytes)}</strong> ({totalEstimatedSavedPercent}% smaller)
                 </p>
-                <p className="text-xs text-surface-600 font-medium mt-0.5">
+                <p className="text-xs sm:text-sm text-surface-600 font-semibold mt-0.5">
                   Total Uploaded: <span className="font-bold text-surface-900">{files.length} {files.length === 1 ? 'image' : 'images'}</span>
                 </p>
               </div>
             ) : (
-              <span className="text-surface-500">Upload images or a ZIP file above to begin compression</span>
+              <span className="text-xs sm:text-sm text-surface-500 font-medium">Upload images or a ZIP file above to begin compression</span>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {files.length > 0 && (
               <button
                 onClick={clearAll}
                 disabled={isProcessing}
-                className="px-3.5 py-2 text-surface-600 hover:text-danger hover:bg-danger-50 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2.5 text-surface-600 hover:text-danger hover:bg-danger-50 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center gap-1.5"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4" />
                 Clear All
               </button>
             )}
@@ -414,7 +414,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             <button
               onClick={runCompression}
               disabled={files.length === 0 || isProcessing}
-              className={`px-5 py-2.5 rounded-lg font-semibold text-xs text-white shadow-subtle flex items-center gap-2 transition-all ${
+              className={`px-6 py-3 rounded-xl font-bold text-sm sm:text-base text-white shadow-subtle flex items-center gap-2.5 transition-all ${
                 files.length === 0 || isProcessing
                   ? 'bg-surface-300 cursor-not-allowed'
                   : 'bg-brand-600 hover:bg-brand-700 shadow-md hover:scale-[1.01]'
@@ -422,12 +422,12 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             >
               {isProcessing ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-5 h-5 animate-spin" />
                   <span>Compressing... ({progress}%)</span>
                 </>
               ) : (
                 <>
-                  <Zap className="w-4 h-4" />
+                  <Zap className="w-5 h-5" />
                   <span>Compress Images</span>
                 </>
               )}

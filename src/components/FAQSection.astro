@@ -69,14 +69,14 @@ const faqJsonLd = {
 
     <div class="space-y-4">
       {faqs.map((f, i) => (
-        <details class="bg-white border border-surface-200 rounded-xl p-5 group [&_summary::-webkit-details-marker]:hidden shadow-subtle cursor-pointer" open={i === 0}>
-          <summary class="flex items-center justify-between font-semibold text-sm sm:text-base text-surface-900 list-none select-none">
+        <details class="bg-white border border-surface-200 rounded-xl p-6 group [&_summary::-webkit-details-marker]:hidden shadow-subtle cursor-pointer" open={i === 0}>
+          <summary class="flex items-center justify-between font-bold text-base sm:text-lg text-surface-900 list-none select-none">
             <span>{f.q}</span>
             <span class="ml-4 transition-transform group-open:rotate-180 text-surface-400">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </span>
           </summary>
-          <p class="text-xs sm:text-sm text-surface-600 leading-relaxed mt-3 pt-3 border-t border-surface-100">
+          <p class="text-sm sm:text-base text-surface-600 leading-relaxed mt-3.5 pt-3.5 border-t border-surface-100 font-normal">
             {f.a}
           </p>
         </details>

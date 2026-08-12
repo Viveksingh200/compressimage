@@ -252,12 +252,6 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             </div>
           </div>
         )}
-
-        {/* Privacy guarantee badge */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[11px] text-surface-500 font-medium bg-surface-100 px-2.5 py-1 rounded-full border border-surface-200">
-          <ShieldCheck className="w-3.5 h-3.5 text-success" />
-          <span>Browser Side • No Uploads</span>
-        </div>
       </div>
 
       {/* Compression Control Panel */}
@@ -282,6 +276,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             ].map((p) => (
               <button
                 key={p.label}
+                suppressHydrationWarning
                 onClick={() => { setMode('targetSize'); setPresetKb(p.value); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   mode === 'targetSize' && presetKb === p.value
@@ -294,6 +289,7 @@ export default function CompressionApp({ initialPreset = '100kb', initialFormat 
             ))}
 
             <button
+              suppressHydrationWarning
               onClick={() => setMode('quality')}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 mode === 'quality'

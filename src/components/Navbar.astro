@@ -1,23 +1,23 @@
 ---
 ---
 
-<header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-surface-200">
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-surface-200">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
     
     <!-- Logo -->
-    <a href="/" class="flex items-center gap-2.5 group">
-      <div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-sm shadow-subtle group-hover:bg-brand-700 transition-colors">
+    <a href="/" class="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+      <div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-sm shadow-subtle group-hover:bg-brand-700 transition-colors flex-shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       </div>
-      <div class="flex flex-col">
-        <span class="font-bold text-base text-surface-900 tracking-tight leading-tight">onlinecompressimage<span class="text-brand-600">.com</span></span>
-        <span class="text-[10px] text-surface-500 font-medium">Browser Image & ZIP Optimizer</span>
+      <div class="flex flex-col min-w-0">
+        <span class="font-bold text-sm sm:text-base text-surface-900 tracking-tight leading-tight truncate">onlinecompressimage<span class="text-brand-600">.com</span></span>
+        <span class="text-[10px] text-surface-500 font-medium hidden sm:inline">Browser Image & ZIP Optimizer</span>
       </div>
     </a>
 
-    <!-- Nav links -->
+    <!-- Desktop Nav links -->
     <nav class="hidden md:flex items-center gap-6 text-xs font-medium text-surface-600">
       <a href="/compress-to-100kb" class="hover:text-surface-900 transition-colors">100KB Preset</a>
       <a href="/compress-to-200kb" class="hover:text-surface-900 transition-colors">200KB Preset</a>
@@ -26,12 +26,80 @@
       <a href="/faq" class="hover:text-surface-900 transition-colors">FAQ</a>
     </nav>
 
-    <!-- Right Badge & Action -->
-    <div class="flex items-center gap-3">
-      <a href="#compress-tool" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs rounded-lg transition-colors shadow-subtle">
-        Compress Now
+    <!-- Right Actions & Mobile Toggle -->
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      <a href="#compress-tool" class="hidden sm:inline-flex px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs rounded-lg transition-colors shadow-subtle items-center gap-1">
+        <span>Compress Now</span>
       </a>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button 
+        id="mobile-menu-btn"
+        aria-label="Toggle navigation menu"
+        class="md:hidden p-2 text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors border border-surface-200"
+      >
+        <svg id="menu-icon-open" class="w-5 h-5 block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="menu-icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
   </div>
+
+  <!-- Mobile Dropdown Panel -->
+  <div 
+    id="mobile-menu-panel" 
+    class="hidden md:hidden border-t border-surface-200 bg-white px-4 pt-3 pb-5 space-y-2 animate-fade-in shadow-modal"
+  >
+    <a href="/compress-to-50kb" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      Compress to 50KB
+    </a>
+    <a href="/compress-to-100kb" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      Compress to 100KB
+    </a>
+    <a href="/compress-to-200kb" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      Compress to 200KB
+    </a>
+    <a href="/compress-to-500kb" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      Compress to 500KB
+    </a>
+    <a href="/zip-image-compressor" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      ZIP File Compressor
+    </a>
+    <a href="/bulk-image-compressor" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      Bulk Image Compressor
+    </a>
+    <a href="/faq" class="block px-3 py-2 text-xs font-medium text-surface-700 hover:text-brand-600 hover:bg-surface-50 rounded-lg transition-colors">
+      FAQ & Help
+    </a>
+  </div>
 </header>
+
+<script is:inline>
+  const btn = document.getElementById('mobile-menu-btn');
+  const panel = document.getElementById('mobile-menu-panel');
+  const openIcon = document.getElementById('menu-icon-open');
+  const closeIcon = document.getElementById('menu-icon-close');
+
+  if (btn && panel) {
+    btn.addEventListener('click', () => {
+      const isExpanded = !panel.classList.contains('hidden');
+      if (isExpanded) {
+        panel.classList.add('hidden');
+        openIcon.classList.remove('hidden');
+        openIcon.classList.add('block');
+        closeIcon.classList.remove('block');
+        closeIcon.classList.add('hidden');
+      } else {
+        panel.classList.remove('hidden');
+        openIcon.classList.remove('block');
+        openIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+        closeIcon.classList.add('block');
+      }
+    });
+  }
+</script>

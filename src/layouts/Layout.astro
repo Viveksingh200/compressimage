@@ -36,22 +36,25 @@ const jsonLd = {
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-  <!-- Suppress non-string postMessage JSON.parse errors caused by browser extensions & ad scripts -->
+  <!-- Suppress non-string postMessage JSON.parse errors caused by third-party ad scripts & browser extensions -->
   <script is:inline>
     (function() {
-      const _origParse = JSON.parse;
-      JSON.parse = function(text, reviver) {
-        if (text === '[object Object]' || (typeof text === 'object' && text !== null)) {
-          return text;
+      const _origAddEventListener = window.addEventListener;
+      window.addEventListener = function(type, listener, options) {
+        if (type === 'message' && typeof listener === 'function') {
+          const safeListener = function(event) {
+            try {
+              return listener.apply(this, arguments);
+            } catch (err) {
+              if (err && err.name === 'SyntaxError' && (err.message.includes('JSON') || err.message.includes('[object Object]'))) {
+                return;
+              }
+              throw err;
+            }
+          };
+          return _origAddEventListener.call(window, type, safeListener, options);
         }
-        try {
-          return _origParse.call(JSON, text, reviver);
-        } catch (e) {
-          if (typeof text === 'string' && text.includes('[object Object]')) {
-            return null;
-          }
-          throw e;
-        }
+        return _origAddEventListener.apply(window, arguments);
       };
     })();
   </script>

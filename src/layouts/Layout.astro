@@ -36,6 +36,25 @@ const jsonLd = {
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
+  <!-- Suppress non-string postMessage JSON.parse errors caused by browser extensions & ad scripts -->
+  <script is:inline>
+    (function() {
+      const _origParse = JSON.parse;
+      JSON.parse = function(text, reviver) {
+        if (text === '[object Object]' || (typeof text === 'object' && text !== null)) {
+          return text;
+        }
+        try {
+          return _origParse.call(JSON, text, reviver);
+        } catch (e) {
+          if (typeof text === 'string' && text.includes('[object Object]')) {
+            return null;
+          }
+          throw e;
+        }
+      };
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

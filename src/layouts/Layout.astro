@@ -11,26 +11,34 @@ interface Props {
 }
 
 const {
-  title = "Compress Images to Any Size Online - Free JPG, PNG, WebP & ZIP Compressor",
+  title = "Compress Images Online - Free JPG, PNG & WebP",
   description = "Compress JPG, PNG, WebP and ZIP files directly in your browser. Choose your target size in 100KB, 200KB, 500KB or 1MB. 100% private with no server uploads.",
   keywords = "compress image size, image compressor, compress image online, reduce image size, compress jpg, compress png, compress image to 100kb, compress image to 200kb, compress zip images",
   canonicalUrl = "https://onlinecompressimage.com"
 } = Astro.props;
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Compress Image Size",
-  "url": canonicalUrl,
-  "description": description,
-  "applicationCategory": "MultimediaApplication",
-  "operatingSystem": "All",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Compress Image Online",
+    "url": canonicalUrl
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Compress Image Online",
+    "url": canonicalUrl,
+    "description": description,
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
   }
-};
+];
 ---
 
 <!DOCTYPE html>
@@ -79,6 +87,7 @@ const jsonLd = {
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
+  <meta property="og:site_name" content="Compress Image Online" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />

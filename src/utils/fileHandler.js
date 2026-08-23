@@ -45,6 +45,11 @@ export async function processInputFiles(fileList) {
               zipName: file.name,
               relativePath
             });
+
+            // Yield every 5 entries to keep UI 100% smooth
+            if (processed.length % 5 === 0) {
+              await new Promise(r => setTimeout(r, 0));
+            }
           }
         }
       } catch (err) {

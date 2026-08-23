@@ -74,6 +74,7 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
   const fileInputRef = useRef(null);
   const uploadedSectionRef = useRef(null);
   const prevFilesLength = useRef(files.length);
+  const isCancelledRef = useRef(false);
 
   useEffect(() => {
     if (files.length > 0 && prevFilesLength.current === 0) {
@@ -125,59 +126,81 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
     }
   };
 
-  // Live real-time probe to measure the exact canvas compressed byte size whenever sliders move
+  // Live real-time probe to measure exact canvas compression ratio and match expected output accurately
   useEffect(() => {
-    if (files.length === 0) return;
+    if (files.length === 0 || isProcessing) return;
 
     let isMounted = true;
     const probeTimer = setTimeout(async () => {
       const targetKbToUse = mode === 'targetSize' ? presetKb : null;
 
-      const probedFiles = await Promise.all(
-        files.map(async (f) => {
-          try {
-            const probeResult = await compressSingleImage(f, {
-              targetSizeKB: targetKbToUse,
-              quality: quality / 100,
-              format,
-              scalePercent,
-            });
-            return {
-              id: f.id,
-              estimatedSize: probeResult.compressedSize,
-              probedResult: probeResult
-            };
-          } catch (e) {
-            return { id: f.id, estimatedSize: null, probedResult: null };
-          }
-        })
-      );
+      // Sample representative files (up to 3 files) for instant, lag-free probing
+      const sampleFiles = files.slice(0, Math.min(3, files.length));
+      let totalSampleOriginal = 0;
+      let totalSampleCompressed = 0;
+      const probedResultsMap = {};
 
-      if (isMounted) {
-        setFiles((prev) =>
-          prev.map((item) => {
-            const probed = probedFiles.find(p => p.id === item.id);
-            if (!probed || !probed.estimatedSize) return item;
+      for (const f of sampleFiles) {
+        if (!isMounted) break;
+        try {
+          const probeResult = await compressSingleImage(f, {
+            targetSizeKB: targetKbToUse,
+            quality: quality / 100,
+            format,
+            scalePercent,
+          });
+          totalSampleOriginal += (f.originalSize || 1);
+          totalSampleCompressed += (probeResult.compressedSize || f.originalSize);
+          probedResultsMap[f.id] = probeResult;
+          // Yield to main event loop
+          await new Promise(r => setTimeout(r, 10));
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!isMounted) return;
+
+      const computedRatio = totalSampleOriginal > 0
+        ? totalSampleCompressed / totalSampleOriginal
+        : null;
+
+      // Update all files with real probed estimates
+      setFiles((prev) =>
+        prev.map((item) => {
+          if (probedResultsMap[item.id]) {
             return {
               ...item,
-              estimatedSize: probed.estimatedSize,
-              probedResult: probed.probedResult
+              estimatedSize: probedResultsMap[item.id].compressedSize,
+              probedResult: probedResultsMap[item.id]
             };
-          })
-        );
-      }
-    }, 120);
+          }
+          if (computedRatio !== null) {
+            const estimatedBytes = Math.min(
+              item.originalSize,
+              Math.max(1024, Math.round(item.originalSize * computedRatio))
+            );
+            return {
+              ...item,
+              estimatedSize: estimatedBytes
+            };
+          }
+          return item;
+        })
+      );
+    }, 150);
 
     return () => {
       isMounted = false;
       clearTimeout(probeTimer);
     };
-  }, [quality, format, scalePercent, mode, presetKb, files.length]);
+  }, [quality, format, scalePercent, mode, presetKb, files.length, isProcessing]);
 
   // Run Compression for all pending files
   const runCompression = async () => {
     if (files.length === 0 || isProcessing) return;
 
+    isCancelledRef.current = false;
     setIsProcessing(true);
     setProgress(0);
 
@@ -185,6 +208,11 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
     const targetKbToUse = mode === 'targetSize' ? presetKb : null;
 
     for (let i = 0; i < updatedFiles.length; i++) {
+      if (isCancelledRef.current) {
+        setIsProcessing(false);
+        return;
+      }
+
       const current = updatedFiles[i];
       updatedFiles[i] = { ...current, status: 'processing' };
       setFiles([...updatedFiles]);
@@ -202,8 +230,18 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
           });
         }
 
+        if (isCancelledRef.current) {
+          setIsProcessing(false);
+          return;
+        }
+
         // Micro delay for smooth progress rendering
         await new Promise((r) => setTimeout(r, 60));
+
+        if (isCancelledRef.current) {
+          setIsProcessing(false);
+          return;
+        }
 
         updatedFiles[i] = {
           ...current,
@@ -211,8 +249,17 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
           status: 'success'
         };
       } catch (err) {
+        if (isCancelledRef.current) {
+          setIsProcessing(false);
+          return;
+        }
         console.error("Compression error for file:", current.name, err);
         updatedFiles[i] = { ...current, status: 'error' };
+      }
+
+      if (isCancelledRef.current) {
+        setIsProcessing(false);
+        return;
       }
 
       const percent = Math.round(((i + 1) / updatedFiles.length) * 100);
@@ -220,18 +267,20 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
       setFiles([...updatedFiles]);
     }
 
-    // Keep progress visible at 100%
-    await new Promise((r) => setTimeout(r, 150));
-    setIsProcessing(false);
+    if (!isCancelledRef.current) {
+      // Keep progress visible at 100%
+      await new Promise((r) => setTimeout(r, 150));
+      setIsProcessing(false);
 
-    // Trigger celebratory confetti if any file was compressed successfully
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.7 }
-      });
-    } catch (e) {}
+      // Trigger celebratory confetti if any file was compressed successfully
+      try {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.7 }
+        });
+      } catch (e) {}
+    }
   };
 
   const removeFile = (id) => {
@@ -239,6 +288,8 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
   };
 
   const clearAll = () => {
+    isCancelledRef.current = true;
+    setIsProcessing(false);
     setFiles([]);
     setProgress(0);
   };
@@ -261,7 +312,7 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
 
     // 2. If live probed real size is available, use exact probed size!
     if (file.estimatedSize) {
-      const estBytes = file.estimatedSize;
+      const estBytes = Math.min(fileOriginalSize, file.estimatedSize);
       const estSaved = Math.max(0, fileOriginalSize - estBytes);
       const estPercent = fileOriginalSize > 0 ? Math.round((estSaved / fileOriginalSize) * 100) : 0;
       return {
@@ -279,14 +330,8 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
     } else {
       const q = quality / 100;
       const s = scalePercent / 100;
-      if (file.width && file.height) {
-        const totalPixels = (file.width * s) * (file.height * s);
-        const bytesPerPixel = 0.015 + Math.pow(q, 2.2) * 0.13;
-        estBytes = Math.min(fileOriginalSize, Math.max(1024, Math.round(totalPixels * bytesPerPixel)));
-      } else {
-        const ratio = 0.04 + Math.pow(q, 2.0) * 0.20 * s;
-        estBytes = Math.min(fileOriginalSize, Math.max(1024, Math.round(fileOriginalSize * ratio)));
-      }
+      const baseRatio = Math.max(0.05, Math.min(0.95, (0.06 + Math.pow(q, 2.5) * 0.35) * s));
+      estBytes = Math.min(fileOriginalSize, Math.max(1024, Math.round(fileOriginalSize * baseRatio)));
     }
 
     const estSaved = Math.max(0, fileOriginalSize - estBytes);
@@ -549,8 +594,7 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
               <div className="flex items-center gap-3">
                 <button
                   onClick={clearAll}
-                  disabled={isProcessing}
-                  className="px-4 py-2.5 text-surface-600 dark:text-surface-400 hover:text-danger hover:bg-danger-50 dark:hover:bg-danger-950/40 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2.5 text-surface-600 dark:text-surface-400 hover:text-danger hover:bg-danger-50 dark:hover:bg-danger-950/40 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   Clear All
@@ -582,16 +626,23 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
 
           </div>
 
-          {/* Compressed Batch Result Banner */}
+          {/* Compressed Batch Result Banner: Visible as soon as compression starts, with button ready once all finish */}
           {successCount > 0 && (
             <div className="bg-success-50 dark:bg-emerald-950/30 border border-success/20 dark:border-emerald-800/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in transition-colors">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-5 h-5" />
+                  {isProcessing ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-5 h-5" />
+                  )}
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm text-surface-900 dark:text-white">
-                    Successfully Compressed {successCount} File{successCount > 1 ? 's' : ''}!
+                    {isProcessing 
+                      ? `Compressing Files (${successCount}/${files.length} Completed)...`
+                      : `Successfully Compressed ${successCount} File${successCount > 1 ? 's' : ''}!`
+                    }
                   </h4>
                   <p className="text-xs text-surface-600 dark:text-surface-300 mt-0.5">
                     Original <span className="line-through">{formatBytes(totalOriginalSize)}</span> → Final Output <strong className="text-surface-900 dark:text-white font-bold">{formatBytes(totalCompressedSize)}</strong> (Saved <strong className="text-success-600 dark:text-success font-bold">{formatBytes(totalSavedBytes)}</strong> / {totalSavedPercent}% smaller)
@@ -599,13 +650,23 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
                 </div>
               </div>
 
-              <button
-                onClick={() => downloadAllAsZip(files, 'compressed_images.zip')}
-                className="px-4 py-2.5 bg-surface-900 dark:bg-surface-100 hover:bg-surface-800 dark:hover:bg-white text-white dark:text-surface-900 rounded-lg font-semibold text-xs shadow-subtle flex items-center justify-center gap-2 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download All as ZIP</span>
-              </button>
+              {isProcessing ? (
+                <button
+                  disabled
+                  className="px-4 py-2.5 bg-surface-200 dark:bg-surface-800 text-surface-500 dark:text-surface-400 rounded-lg font-semibold text-xs flex items-center justify-center gap-2 cursor-not-allowed opacity-80"
+                >
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Preparing ZIP ({progress}%)...</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => downloadAllAsZip(files, 'compressed_images.zip')}
+                  className="px-4 py-2.5 bg-surface-900 dark:bg-surface-100 hover:bg-surface-800 dark:hover:bg-white text-white dark:text-surface-900 rounded-lg font-semibold text-xs shadow-subtle flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download All as ZIP</span>
+                </button>
+              )}
             </div>
           )}
 

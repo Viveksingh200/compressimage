@@ -24,7 +24,13 @@ export async function downloadAllAsZip(fileItems, zipFilename = 'compressed_imag
     zip.file(nameInZip, item.compressedBlob);
   }
 
-  const content = await zip.generateAsync({ type: 'blob' });
+  const content = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: {
+      level: 9
+    }
+  });
   
   // Trigger file download in browser
   const link = document.createElement('a');

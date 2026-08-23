@@ -67,7 +67,8 @@ export async function compressSingleImage(imageItem, options = {}) {
       initialHeight: canvasHeight,
       mimeType,
       targetBytes,
-      originalSize: imageItem.originalSize
+      originalSize: imageItem.originalSize,
+      file: imageItem.file
     });
     return {
       ...imageItem,
@@ -101,24 +102,45 @@ export async function compressSingleImage(imageItem, options = {}) {
   // If blob failed or generated blob bloats larger than original file size
   if (!finalBlob || finalBlob.size >= imageItem.originalSize) {
     const webpBlob = await canvasToBlob(canvas, 'image/webp', quality);
-    if (webpBlob && (webpBlob.size < (finalBlob ? finalBlob.size : Infinity))) {
+    if (webpBlob && (!finalBlob || webpBlob.size < finalBlob.size)) {
       finalBlob = webpBlob;
+      targetMime = 'image/webp';
     }
   }
 
   if (!finalBlob || finalBlob.size >= imageItem.originalSize) {
     const jpegBlob = await canvasToBlob(canvas, 'image/jpeg', quality);
-    if (jpegBlob && (jpegBlob.size < (finalBlob ? finalBlob.size : Infinity))) {
+    if (jpegBlob && (!finalBlob || jpegBlob.size < finalBlob.size)) {
       finalBlob = jpegBlob;
+      targetMime = 'image/jpeg';
     }
+  }
+
+  // If STILL larger than original, progressively reduce quality to ensure real size reduction
+  if (finalBlob && finalBlob.size >= imageItem.originalSize) {
+    for (let q = Math.min(quality, 0.70); q >= 0.20; q -= 0.15) {
+      const smallerWebp = await canvasToBlob(canvas, 'image/webp', q);
+      if (smallerWebp && smallerWebp.size < imageItem.originalSize) {
+        finalBlob = smallerWebp;
+        targetMime = 'image/webp';
+        break;
+      }
+    }
+  }
+
+  // Absolute Guarantee: If even downscaled/lossy blob is >= original, use original file
+  let compressedBlob = finalBlob;
+  let compressedSize = finalBlob ? finalBlob.size : imageItem.originalSize;
+  if (compressedSize >= imageItem.originalSize && imageItem.file) {
+    compressedBlob = imageItem.file;
+    compressedSize = imageItem.originalSize;
   }
 
   // Preserve user's explicitly selected output format name (AVIF, WEBP, PNG, JPG)
   let outputFormatName = requestedMime.split('/')[1].toUpperCase();
   if (outputFormatName === 'JPEG') outputFormatName = 'JPG';
 
-  const compressedSize = finalBlob ? finalBlob.size : imageItem.originalSize;
-  const compressedUrl = finalBlob ? URL.createObjectURL(finalBlob) : imageItem.previewUrl;
+  const compressedUrl = compressedBlob ? URL.createObjectURL(compressedBlob) : imageItem.previewUrl;
   const savedBytes = Math.max(0, imageItem.originalSize - compressedSize);
   const savedPercent = imageItem.originalSize > 0
     ? Math.max(0, Math.round((savedBytes / imageItem.originalSize) * 100))
@@ -126,7 +148,7 @@ export async function compressSingleImage(imageItem, options = {}) {
 
   return {
     ...imageItem,
-    compressedBlob: finalBlob,
+    compressedBlob,
     compressedSize,
     compressedUrl,
     savedBytes,
@@ -142,10 +164,13 @@ export async function compressSingleImage(imageItem, options = {}) {
 /**
  * Binary search quality & dimension scaling engine to match target file size KB exactly.
  */
-async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, mimeType, targetBytes, originalSize }) {
+async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, mimeType, targetBytes, originalSize, file }) {
   let currentWidth = initialWidth;
   let currentHeight = initialHeight;
   let workCanvas = canvas;
+
+  // Maximum allowed size is the minimum of targetBytes and originalSize
+  const effectiveMaxBytes = Math.min(targetBytes, originalSize);
 
   // For target size compression on PNGs/AVIF, use WebP or JPEG because canvas export for PNG/AVIF bloats without quality fitting
   let targetMime = (mimeType === 'image/png' || mimeType === 'image/avif') ? 'image/webp' : mimeType;
@@ -166,10 +191,10 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
 
       if (!testBlob) break;
 
-      if (testBlob.size <= targetBytes) {
+      if (testBlob.size <= effectiveMaxBytes) {
         bestBlob = testBlob;
         bestQuality = midQ;
-        // Try to get higher quality while remaining <= targetBytes
+        // Try to get higher quality while remaining <= effectiveMaxBytes
         minQ = midQ + 0.01;
       } else {
         // Blob is too large, lower the quality
@@ -177,8 +202,8 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
       }
     }
 
-    // If we found a valid blob under target size, break pass loop!
-    if (bestBlob && bestBlob.size <= targetBytes) {
+    // If we found a valid blob under effective target size, break pass loop!
+    if (bestBlob && bestBlob.size <= effectiveMaxBytes) {
       break;
     }
 
@@ -202,20 +227,29 @@ async function compressToTargetSize({ canvas, img, initialWidth, initialHeight, 
     bestBlob = await canvasToBlob(workCanvas, targetMime, 0.1);
   }
 
-  // Pad blob to EXACTLY targetBytes if it's smaller (e.g. exactly 204,800 bytes for 200KB)
-  if (bestBlob && bestBlob.size < targetBytes && originalSize >= targetBytes) {
+  // Pad blob to EXACTLY targetBytes ONLY if original image was larger than targetBytes
+  // (e.g. compressing a 1MB photo down to 200KB).
+  // NEVER pad if the original file was already smaller than targetBytes!
+  if (bestBlob && originalSize >= targetBytes && bestBlob.size < targetBytes) {
     bestBlob = await padBlobToExactTarget(bestBlob, targetMime, targetBytes);
   }
 
-  const compressedSize = bestBlob ? bestBlob.size : originalSize;
-  const compressedUrl = bestBlob ? URL.createObjectURL(bestBlob) : '';
+  // Guarantee: output size MUST NOT exceed originalSize
+  let finalBlob = bestBlob;
+  let compressedSize = bestBlob ? bestBlob.size : originalSize;
+  if (compressedSize > originalSize && file) {
+    finalBlob = file;
+    compressedSize = originalSize;
+  }
+
+  const compressedUrl = finalBlob ? URL.createObjectURL(finalBlob) : '';
   const savedBytes = Math.max(0, originalSize - compressedSize);
   const savedPercent = originalSize > 0
     ? Math.max(0, Math.round((savedBytes / originalSize) * 100))
     : 0;
 
   return {
-    compressedBlob: bestBlob,
+    compressedBlob: finalBlob,
     compressedSize,
     compressedUrl,
     savedBytes,

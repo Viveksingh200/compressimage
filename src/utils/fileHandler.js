@@ -30,7 +30,7 @@ export async function processInputFiles(fileList) {
             const fileName = zipEntry.name.split('/').pop() || zipEntry.name;
             const ext = fileName.split('.').pop().toLowerCase();
             const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'avif' ? 'image/avif' : 'image/jpeg';
-            
+
             const extractedFile = new File([blob], fileName, { type: mimeType });
             const previewUrl = URL.createObjectURL(extractedFile);
 

@@ -8,29 +8,29 @@ const formats = [
 ];
 ---
 
-<section class="py-16 sm:py-24 border-b border-surface-200 bg-white">
+<section class="py-16 sm:py-24 border-b border-surface-200 dark:border-surface-800 bg-white dark:bg-[#0b0f19] transition-colors duration-150">
   <div class="max-w-6xl mx-auto px-4 sm:px-6">
     
     <div class="max-w-2xl mx-auto text-center mb-12">
-      <span class="text-xs font-semibold text-brand-600 tracking-wider uppercase">Format Compatibility</span>
-      <h2 class="text-2xl sm:text-4xl font-bold text-surface-900 tracking-tight mt-1.5">
+      <span class="text-xs font-semibold text-brand-600 dark:text-brand-400 tracking-wider uppercase">Format Compatibility</span>
+      <h2 class="text-2xl sm:text-4xl font-bold text-surface-900 dark:text-white tracking-tight mt-1.5">
         Supported Image & Archive Formats
       </h2>
-      <p class="text-sm sm:text-base text-surface-500 mt-2">
+      <p class="text-sm sm:text-base text-surface-500 dark:text-surface-400 mt-2">
         Full cross-browser decoding and encoding support.
       </p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
       {formats.map((f) => (
-        <div class="bg-surface-50 border border-surface-200 rounded-xl p-5 hover:border-brand-500/40 hover:bg-white transition-all shadow-subtle flex flex-col justify-between">
+        <div class="bg-surface-50 dark:bg-[#131b2e] border border-surface-200 dark:border-surface-800 rounded-xl p-5 hover:border-brand-500/40 hover:bg-white dark:hover:bg-[#162038] transition-all shadow-subtle flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <h3 class="font-bold text-lg text-surface-900">{f.name}</h3>
-              <span class="text-[11px] font-semibold text-brand-700 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-full">{f.badge}</span>
+              <h3 class="font-bold text-lg text-surface-900 dark:text-white">{f.name}</h3>
+              <span class="text-[11px] font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 border border-brand-100 dark:border-brand-900/60 px-2 py-0.5 rounded-full">{f.badge}</span>
             </div>
-            <p class="text-xs font-medium text-surface-500 mb-3">{f.tag}</p>
-            <p class="text-xs text-surface-600 leading-relaxed">{f.desc}</p>
+            <p class="text-xs font-medium text-surface-500 dark:text-surface-400 mb-3">{f.tag}</p>
+            <p class="text-xs text-surface-600 dark:text-surface-300 leading-relaxed">{f.desc}</p>
           </div>
         </div>
       ))}

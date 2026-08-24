@@ -15,6 +15,19 @@ import FAQSection from '../components/FAQSection.astro';
     headline="Compress Images inside ZIP Archive"
     subheading="Upload any ZIP file containing photos. We unpack every image, compress them to your required KB size, and give you a compressed ZIP file back."
   />
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 -mt-8 mb-12">
+    <div class="p-4 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <div class="text-xs text-surface-700 dark:text-surface-300">
+        <span class="font-bold text-brand-600 dark:text-brand-400">Looking to compress an entire ZIP archive?</span>
+        <span> (including documents, PDFs, and code with Deflate 9)</span>
+      </div>
+      <a href="/compress-zip" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs rounded-lg transition-colors shadow-subtle whitespace-nowrap">
+        Try ZIP Archive Compressor →
+      </a>
+    </div>
+  </div>
+
   <WorkflowSection />
   <FeatureGrid />
   <FAQSection />

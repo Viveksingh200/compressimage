@@ -11,6 +11,7 @@ const pages = [
   "compress-avif",
   "bulk-image-compressor",
   "zip-image-compressor",
+  "compress-zip",
   "image-resizer",
   "image-format-converter",
   "faq"

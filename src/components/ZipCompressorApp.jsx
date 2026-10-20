@@ -73,7 +73,9 @@ export default function ZipCompressorApp() {
 
   const handleFileSelect = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      await handleIncomingFiles(e.target.files);
+      const selected = Array.from(e.target.files);
+      e.target.value = '';
+      await handleIncomingFiles(selected);
     }
   };
 
@@ -226,12 +228,12 @@ export default function ZipCompressorApp() {
       
       {/* Upload Dropzone */}
       {!archiveData && (
-        <div
+        <label
+          htmlFor="zip-archive-upload-input"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`relative border-2 border-dashed rounded-2xl p-8 sm:p-14 text-center cursor-pointer transition-all duration-200 group bg-white/70 dark:bg-[#111928]/70 backdrop-blur-sm shadow-subtle ${
+          className={`relative block border-2 border-dashed rounded-2xl p-8 sm:p-14 text-center cursor-pointer transition-all duration-200 group bg-white/70 dark:bg-[#111928]/70 backdrop-blur-sm shadow-subtle ${
             isDragging
               ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/30 scale-[1.01]'
               : 'border-surface-300 dark:border-surface-700 hover:border-brand-500 dark:hover:border-brand-500 hover:bg-surface-50/80 dark:hover:bg-[#141f33]'
@@ -240,10 +242,12 @@ export default function ZipCompressorApp() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".zip,application/zip,application/x-zip-compressed,*"
+            accept=".zip,application/zip,application/x-zip-compressed"
             multiple
             onChange={handleFileSelect}
-            className="hidden"
+            className="sr-only"
+            id="zip-archive-upload-input"
+            tabIndex={-1}
           />
 
           <div className="flex flex-col items-center justify-center gap-4">
@@ -260,8 +264,23 @@ export default function ZipCompressorApp() {
                 {isAnalyzing ? 'Analyzing ZIP Archive...' : 'Drop your ZIP file here'}
               </p>
               <p className="text-xs sm:text-sm text-surface-500 dark:text-surface-400">
-                or <span className="text-brand-600 dark:text-brand-400 font-semibold underline underline-offset-2">browse from your computer</span>. Supports all .zip files, mixed folders, or batch files.
+                or <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); fileInputRef.current?.click(); }} className="text-brand-600 dark:text-brand-400 font-semibold underline underline-offset-2 hover:text-brand-700 dark:hover:text-brand-300 cursor-pointer">browse from your computer</button>. Supports all .zip files, mixed folders, or batch files.
               </p>
+            </div>
+
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-subtle transition-colors inline-flex items-center gap-2 cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                Browse from your computer
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[11px] font-medium text-surface-500 dark:text-surface-400">
@@ -276,7 +295,7 @@ export default function ZipCompressorApp() {
               </span>
             </div>
           </div>
-        </div>
+        </label>
       )}
 
       {/* Error Banner */}

@@ -72,6 +72,7 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
   }, [files, mode, presetKb]);
 
   const fileInputRef = useRef(null);
+  const zipInputRef = useRef(null);
   const uploadedSectionRef = useRef(null);
   const prevFilesLength = useRef(files.length);
   const isCancelledRef = useRef(false);
@@ -110,7 +111,9 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
 
   const handleFileSelect = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      await processFiles(Array.from(e.target.files));
+      const selectedFiles = Array.from(e.target.files);
+      e.target.value = '';
+      await processFiles(selectedFiles);
     }
   };
 
@@ -385,12 +388,12 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-6">
       
       {/* Upload Dropzone */}
-      <div 
+      <label 
+        htmlFor="file-upload-input"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`relative border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 bg-white dark:bg-[#131b2e] ${
+        className={`relative block border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 bg-white dark:bg-[#131b2e] ${
           isDragging 
             ? 'border-brand-600 bg-brand-50/50 dark:bg-brand-950/30 shadow-md scale-[1.005]' 
             : 'border-surface-200 dark:border-surface-700/80 hover:border-brand-500/50 dark:hover:border-brand-400/50 hover:bg-surface-50/50 dark:hover:bg-[#162038] shadow-subtle'
@@ -400,13 +403,23 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
           ref={fileInputRef}
           type="file" 
           multiple 
-          accept="image/*,.zip" 
+          accept="image/*,.zip,application/zip,application/x-zip-compressed" 
           onChange={handleFileSelect} 
-          className="hidden" 
+          className="sr-only" 
           id="file-upload-input"
+          tabIndex={-1}
+        />
+        <input 
+          ref={zipInputRef}
+          type="file" 
+          accept=".zip,application/zip,application/x-zip-compressed" 
+          onChange={handleFileSelect} 
+          className="sr-only" 
+          id="zip-upload-input"
+          tabIndex={-1}
         />
 
-        <div className="flex flex-col items-center justify-center gap-4 max-w-lg mx-auto pointer-events-none">
+        <div className="flex flex-col items-center justify-center gap-4 max-w-lg mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-900/60 flex items-center justify-center shadow-subtle">
             <Upload className="w-8 h-8" />
           </div>
@@ -421,14 +434,30 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <span className="px-5 py-2.5 bg-brand-600 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-subtle hover:bg-brand-700 transition-colors flex items-center gap-2 pointer-events-auto">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="px-5 py-2.5 bg-brand-600 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-subtle hover:bg-brand-700 transition-colors flex items-center gap-2 cursor-pointer"
+            >
               <Upload className="w-4 h-4" />
               Browse Files
-            </span>
-            <span className="px-5 py-2.5 bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 font-semibold text-xs sm:text-sm rounded-xl border border-surface-200 dark:border-surface-700 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors flex items-center gap-2 pointer-events-auto">
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zipInputRef.current ? zipInputRef.current.click() : fileInputRef.current?.click();
+              }}
+              className="px-5 py-2.5 bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-200 font-semibold text-xs sm:text-sm rounded-xl border border-surface-200 dark:border-surface-700 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors flex items-center gap-2 cursor-pointer"
+            >
               <FolderArchive className="w-4 h-4 text-surface-500 dark:text-surface-400" />
               Upload ZIP
-            </span>
+            </button>
           </div>
         </div>
 
@@ -444,7 +473,7 @@ export default function CompressionApp({ initialPreset = 'custom', initialFormat
             </div>
           </div>
         )}
-      </div>
+      </label>
 
       {/* Uploaded Section: Appears once files are uploaded */}
       {files.length > 0 && (
